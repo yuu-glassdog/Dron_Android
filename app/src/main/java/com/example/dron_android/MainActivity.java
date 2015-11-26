@@ -162,7 +162,7 @@ public class MainActivity extends AppCompatActivity implements Runnable, View.On
                     }
                 } else {
                     // 青が問題なく通過する
-                    state[xR][yR].setColor(Color.BLUE);
+                    state[xB][yB].setColor(Color.BLUE);
                 }
                 if (!liveR) {
                     if (!liveB) {
