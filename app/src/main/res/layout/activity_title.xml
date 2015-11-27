@@ -23,7 +23,7 @@
         android:layout_width="300dp"
         android:layout_height="100dp"
         android:id="@+id/imageView2"
-        android:src="@drawable/titleName"
+        android:src="@drawable/title"
         android:layout_marginTop="25dp"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true" />
