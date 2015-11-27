@@ -10,18 +10,25 @@ import android.view.*;
 import android.graphics.*;
 import android.widget.*;
 import android.media.*;
+import java.util.Random;
 
 public class MainActivity extends AppCompatActivity implements Runnable, View.OnClickListener {
     private Paint state[][];
     private int xSize, ySize;
     private int block;
-    private int xR, yR, xB, yB;         // 赤と青の次の座標
+    private int xR, yR, xB, yB;         // 赤と青の座標
     private int dxR, dyR, dxB, dyB;     // 進む方向
     private boolean liveR, liveB;       // 赤と青の生存フラグ
     private int countR, countB;         // 勝利数のカウント
     private Thread thread;
     private Handler mHandler;
     private int bKeyR = 'D', bKeyB = 'I';	// １つ前に押したキー(最初の進行方向で初期化)
+
+    // ジャマー
+    private boolean liveA;          // ジャマーの生存フラグ
+    private int xA,yA;               // ジャマーの座標
+    private int dxA, dyA;           // ジャマーの進む方向
+    private int num[] = {-1,1,0};
 
     private ImageView img;  // オフスクリーンイメージ
     private Bitmap bitmap;
@@ -90,11 +97,12 @@ public class MainActivity extends AppCompatActivity implements Runnable, View.On
         // 初期位置を設定
         xR = yR = 2;
         xB = xSize-3; yB = ySize-3;
+        xA = yA = 40;
         // 進む方向の初期設定
         dxR = dxB = 0;
         dyR = 1; dyB = -1;
-        // 赤と青の生存フラグを立てる
-        liveR = liveB = true;
+        // 赤と青とジャマーの生存フラグを立てる
+        liveR = liveB = liveA = true;
     }
 
     public void start() {
@@ -111,6 +119,7 @@ public class MainActivity extends AppCompatActivity implements Runnable, View.On
             thread.interrupt();
             thread = null;
         }
+        bgm.release();  // メモリ解放
     }
 
     public void paint() {
@@ -148,6 +157,14 @@ public class MainActivity extends AppCompatActivity implements Runnable, View.On
             // ステージの初期化
             initialize();
             while (liveR&&liveB) {
+                // ジャマーを進める
+                if ( liveA == true ) {
+                    xA += dxA; yA += dyA;
+                    if (state[xA][yA].getColor() != Color.WHITE) {
+                        xA -= dxA; yA -= dyA;
+                    }
+                    state[xA][yA].setColor(Color.BLACK);
+                }
                 // 赤を進める
                 xR += dxR; yR += dyR;
                 if (state[xR][yR].getColor() != Color.WHITE) {
@@ -176,20 +193,17 @@ public class MainActivity extends AppCompatActivity implements Runnable, View.On
                     if (!liveB) {
                         // 引き分け
                         bgm.stop();     // BGMを停止
-                        bgm.release();  // メモリ解放
                         stop(); // ゲーム終了
                     } else {
                         // 青の勝利
                         countB++;
                         bgm.stop();     // BGMを停止
-                        bgm.release();  // メモリ解放
                         stop(); // ゲーム終了
                     }
                 } else if (!liveB) {
                     // 赤の勝利
                     countR++;
                     bgm.stop();     // BGMを停止
-                    bgm.release();  // メモリ解放
                     stop(); // ゲーム終了
                 }
                 // ステージの様子を描画
@@ -210,6 +224,29 @@ public class MainActivity extends AppCompatActivity implements Runnable, View.On
     }
 
     public void onClick(View v){
+        Random rnd = new Random();
+        // 中心から始まるAIは、ユーザがキーをタイプする毎に動く。
+        dxA = num[rnd.nextInt(3)];
+        if(dxA == 0){
+            dyA = num[rnd.nextInt(2)];
+        }
+        else{
+            dyA = 0;
+        }
+        while (state[xA+dxA][yA+dyA].getColor() != Color.WHITE) {
+            // 四方が白でないときAI停止
+            if ( state[xA+1][yA].getColor() != Color.WHITE && state[xA][yA+1].getColor() != Color.WHITE && state[xA-1][yA].getColor() != Color.WHITE && state[xA][yA-1].getColor() != Color.WHITE) {
+                liveA = false;
+                break;
+            }
+            dxA = num[rnd.nextInt(3)];
+            if(dxA == 0){
+                dyA = num[rnd.nextInt(2)];
+            }
+            else{
+                dyA = 0;
+            }
+        }
         // 押したボタンによる分岐
         switch(v.getId()){
             case R.id.button:   if ( bKeyR == 'E' ) { break; }	// 逆向き入力の即死回避
