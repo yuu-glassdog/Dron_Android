@@ -1,5 +1,6 @@
 package com.example.dron_android;
 
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.WindowDecorActionBar;
 import android.os.Bundle;
@@ -25,6 +26,7 @@ public class MainActivity extends AppCompatActivity implements Runnable, View.On
     private ImageView img;  // オフスクリーンイメージ
     private Bitmap bitmap;
     private int width, height;
+    private MediaPlayer bgm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -137,12 +139,10 @@ public class MainActivity extends AppCompatActivity implements Runnable, View.On
     @Override
     public void run() {
         Thread thisThread = Thread.currentThread();
-        // SE
-        //MediaPlayer hit = MediaPlayer.create(getApplicationContext(), R.raw.break);
         // BGM
-        MediaPlayer bgm = MediaPlayer.create(getApplicationContext(), R.raw.game_maoudamashii_7_event41);
-        bgm.start();            // 再生開始
+        bgm = MediaPlayer.create(getApplicationContext(), R.raw.game_maoudamashii_7_event41);
         bgm.setLooping(true);  // ループするように設定
+        bgm.start();            // 再生開始
 
         while (thisThread==thread) {
             // ステージの初期化
@@ -175,19 +175,22 @@ public class MainActivity extends AppCompatActivity implements Runnable, View.On
                 if (!liveR) {
                     if (!liveB) {
                         // 引き分け
-                        bgm.stop();
-                        stop();
+                        bgm.stop();     // BGMを停止
+                        bgm.release();  // メモリ解放
+                        stop(); // ゲーム終了
                     } else {
                         // 青の勝利
                         countB++;
-                        bgm.stop();
-                        stop();
+                        bgm.stop();     // BGMを停止
+                        bgm.release();  // メモリ解放
+                        stop(); // ゲーム終了
                     }
                 } else if (!liveB) {
                     // 赤の勝利
                     countR++;
-                    bgm.stop();
-                    stop();
+                    bgm.stop();     // BGMを停止
+                    bgm.release();  // メモリ解放
+                    stop(); // ゲーム終了
                 }
                 // ステージの様子を描画
                 mHandler.post(new Runnable() {
