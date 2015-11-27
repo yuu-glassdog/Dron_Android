@@ -21,7 +21,7 @@ public class MainActivity extends AppCompatActivity implements Runnable, View.On
     private boolean liveR, liveB;       // 赤と青の生存フラグ
     private int countR, countB;         // 勝利数のカウント
     private Thread thread;
-    private Handler mHandler;
+    private Handler mHandler, fHandler;
     private int bKeyR = 'D', bKeyB = 'I';	// １つ前に押したキー(最初の進行方向で初期化)
 
     // ジャマー
@@ -34,6 +34,8 @@ public class MainActivity extends AppCompatActivity implements Runnable, View.On
     private Bitmap bitmap;
     private int width, height;
     private MediaPlayer bgm;
+    private AlertDialog.Builder alertDialogBuilder;
+    private AlertDialog alertDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +68,10 @@ public class MainActivity extends AppCompatActivity implements Runnable, View.On
         btn6.setOnClickListener(this);
         btn7.setOnClickListener(this);
         btn8.setOnClickListener(this);
+        // アラートダイアログのビルダーを生成
+        alertDialogBuilder = new AlertDialog.Builder(this);
+        // アラートダイアログのタイトルを設定
+        alertDialogBuilder.setTitle("結果");
         // ゲーム開始
         start();
     }
@@ -107,7 +113,8 @@ public class MainActivity extends AppCompatActivity implements Runnable, View.On
 
     public void start() {
         if (thread == null) {
-            mHandler = new Handler();
+            mHandler = new Handler();   // 描画用のハンドラ
+            fHandler = new Handler();   // ダイアログ用のハンドラ
             thread = new Thread(this);
             thread.start();
         }
@@ -119,7 +126,25 @@ public class MainActivity extends AppCompatActivity implements Runnable, View.On
             thread.interrupt();
             thread = null;
         }
-        bgm.release();  // メモリ解放
+        // BGMのメモリ解放
+        bgm.release();
+        // ハンドラ内でダイアログの処理
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                // アラートダイアログのメッセージを設定
+                if (!liveR && !liveB) {
+                    alertDialogBuilder.setMessage("引き分け");
+                } else if (!liveR) {
+                    alertDialogBuilder.setMessage("青の勝ち");
+                } else {
+                    alertDialogBuilder.setMessage("赤の勝ち");
+                }
+                // アラートダイアログを生成、表示
+                alertDialog = alertDialogBuilder.create();
+                alertDialog.show();
+            }
+        });
     }
 
     public void paint() {
