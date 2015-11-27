@@ -8,6 +8,7 @@ import android.app.*;
 import android.view.*;
 import android.graphics.*;
 import android.widget.*;
+import android.media.*;
 
 public class MainActivity extends AppCompatActivity implements Runnable, View.OnClickListener {
     private Paint state[][];
@@ -136,6 +137,13 @@ public class MainActivity extends AppCompatActivity implements Runnable, View.On
     @Override
     public void run() {
         Thread thisThread = Thread.currentThread();
+        // SE
+        //MediaPlayer hit = MediaPlayer.create(getApplicationContext(), R.raw.break);
+        // BGM
+        MediaPlayer bgm = MediaPlayer.create(getApplicationContext(), R.raw.game_maoudamashii_7_event41);
+        bgm.start();            // 再生開始
+        bgm.setLooping(true);  // ループするように設定
+
         while (thisThread==thread) {
             // ステージの初期化
             initialize();
@@ -167,15 +175,18 @@ public class MainActivity extends AppCompatActivity implements Runnable, View.On
                 if (!liveR) {
                     if (!liveB) {
                         // 引き分け
+                        bgm.stop();
                         stop();
                     } else {
                         // 青の勝利
                         countB++;
+                        bgm.stop();
                         stop();
                     }
                 } else if (!liveB) {
                     // 赤の勝利
                     countR++;
+                    bgm.stop();
                     stop();
                 }
                 // ステージの様子を描画
